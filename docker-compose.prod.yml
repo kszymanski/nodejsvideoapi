@@ -1,0 +1,13 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: ./Server
+      dockerfile: production.dockerfile
+    volumes:
+      - "./Server:/app"
+    ports:
+      - "3000:3000"
+    environment:
+      SERVER_PORT: 3000
+      LOG_LEVEL: info

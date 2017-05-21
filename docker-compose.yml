@@ -1,0 +1,39 @@
+version: '3'
+services:
+  backend:
+    container_name: api
+    build:
+      context: ./Server
+      dockerfile: dev.dockerfile
+    depends_on:
+      - database
+    volumes:
+      - "./Server:/app"
+    ports:
+      - "3000:3001"
+    environment:
+      SERVER_PORT: 3001
+      LOG_LEVEL: debug
+      DATABASE_HOST: database
+      DATABASE_NAME: videos
+      DATABASE_USER: videos
+      DATABASE_PASSWORD: videos
+    networks: 
+      - backend
+  database:
+    image: mysql
+    container_name: database
+    environment:
+      MYSQL_ROOT_PASSWORD: "mypassword"
+      MYSQL_DATABASE: videos
+      MYSQL_USER: videos
+      MYSQL_PASSWORD: videos
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks: 
+      - backend
+networks:
+  backend:
+    driver: bridge
