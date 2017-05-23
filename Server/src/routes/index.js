@@ -1,4 +1,4 @@
-module.exports = (app, database) => {
-    const videos = require('./videos.js')(database);
-    app.use('/videos', videos);
+module.exports = (app, model, auth) => {
+    const videos = require('./videos.js')(model.Videos);
+    app.use('/videos',auth, videos);
 }

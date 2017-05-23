@@ -7,8 +7,13 @@ module.exports = (config, database )=> {
     winston.debug('Environment:', config.environment);
     let app = express();
 
-    winston.debug('Setting up middlewares...');
+    winston.debug('Setting up model...');
+    let model = require('./model')(database);
 
+    winston.debug('Setting up auth...');
+    let auth = require('./auth')(app,model.Users, config);
+
+    winston.debug('Setting up middlewares...');
     if(config.environment === 'Development'){
         app.use(morgan('dev'));
     }else if(config.environment === 'Production'){
@@ -19,7 +24,7 @@ module.exports = (config, database )=> {
     app.use(bodyParser.urlencoded({ extended: true }));
 
     winston.debug('Setting up routes...');
-    require('./routes')(app, database);
+    require('./routes')(app, model, auth);
 
     return app;
 };
