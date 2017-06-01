@@ -6,20 +6,18 @@ const BearerStrategy = require('passport-http-bearer').Strategy;
 module.exports = (app, Users, config) => {
     app.use(passport.initialize());
 
-    passport.use(new GoogleStrategy({
-        clientID: "639861488672-555dggtnp1dm3r242dljobndrtvi7em4.apps.googleusercontent.com",
-        clientSecret: 'bqPEJ5LuDYtid7d8gZVkokYx',
-        callbackURL: "http://localhost:3000/auth/google/callback"
-    },
+    passport.use(new GoogleStrategy(config.auth,
         function (token, tokenSecret, profile, done) {
             winston.debug('Google login profile id', profile.id);
             winston.debug('Google login token', token);
             new Users({ id: profile.id }).fetch().then(model => {
                 if(!!model){
+                    model.token = token;
                     return done(null, model);
                 }else{
                     new Users({ id: profile.id, name: profile.displayName }).save(null, {method: 'insert'})
                     .then(saved => {
+                        saved.token = token;
                         return done(null, saved);
                     });
                 }
@@ -29,12 +27,16 @@ module.exports = (app, Users, config) => {
     ));
 
     app.get('/auth/google/callback',
-        passport.authenticate('google', { failureRedirect: '/login', session: false }),
-        function (req, res) {
-            // Successful authentication, redirect home.
-            res.redirect('/');
+        passport.authenticate('google', { failureRedirect: '/loginFailed', session: false }),
+        (req, res) => {
+            let user = req.user;
+            res.json({
+                token: user.token
+            });
         });
-
+    app.get('/loginFailed', (req, res) => {
+            res.status(401).send();
+        });
     app.get('/auth/google', passport.authenticate('google', { scope: ['openid', 'profile'], session: false }));
 
     passport.use(new BearerStrategy(

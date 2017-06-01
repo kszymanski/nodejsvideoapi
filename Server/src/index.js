@@ -24,7 +24,7 @@ module.exports = (config, database )=> {
     app.use(bodyParser.urlencoded({ extended: true }));
 
     winston.debug('Setting up routes...');
-    require('./routes')(app, model, auth);
+    require('./routes')(app, model, auth, config.filePath);
 
     return app;
 };
